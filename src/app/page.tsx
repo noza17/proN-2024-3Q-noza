@@ -69,7 +69,7 @@ const MapComponent = () => {
 
   const getMapImageUrl = () => {
     if (!location) return '';
-    const apiKey = NEXT_PUBLIC_GOOGLE_MAPS_API_KEY; // この行を保持して良い
+    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY; // この行を保持して良い
     if (!apiKey) {
       console.error('APIキーが見つかりません。');
       return '';
