@@ -2,11 +2,15 @@
   "name": "pron-map-download",
   "version": "0.1.0",
   "private": true,
+  "homepage": "https://noza17.github.io/proN-2024-3Q-noza",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
+
   },
   "dependencies": {
     "@react-google-maps/api": "^2.20.2",
@@ -23,6 +27,7 @@
     "@types/react-dom": "^18",
     "eslint": "^8",
     "eslint-config-next": "14.2.15",
+    "gh-pages": "^6.2.0",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
     "typescript": "^5"

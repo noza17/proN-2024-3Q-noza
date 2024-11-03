@@ -3,8 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import Papa from 'papaparse';
 
-const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
-
 interface Shelter {
   lat: number;
   lng: number;
@@ -71,7 +69,12 @@ const MapComponent = () => {
 
   const getMapImageUrl = () => {
     if (!location) return '';
-    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY; // ここにAPIキーを入力
+    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY; // この行を保持して良い
+    if (!apiKey) {
+      console.error('APIキーが見つかりません。');
+      return '';
+    }
+    
     const { lat, lng } = location;
     const zoom = 15;
     const size = '500x500';
