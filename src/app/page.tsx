@@ -38,13 +38,13 @@ const MapComponent = () => {
     Papa.parse('/TokyoSheet.csv', {
       download: true,
       header: true,
-      complete: (results) => {
-        const parsedData: Shelter[] = results.data.map((row: any) => ({
+      complete: (results: Papa.ParseResult<Record<string, string>>) => {
+        const parsedData: Shelter[] = results.data.map((row) => ({
           lat: parseFloat(row.lat),
           lng: parseFloat(row.lng),
         }));
         setShelters(parsedData);
-      },
+      },      
       error: () => {
         console.log('CSVの読み込みに失敗しました。');
       },
