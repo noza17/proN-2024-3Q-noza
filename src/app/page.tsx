@@ -1,4 +1,4 @@
-"use client";  // ファイルの先頭に配置
+"use client";
 
 import React, { useState, useEffect } from 'react';
 import Papa from 'papaparse';
@@ -8,12 +8,10 @@ interface Shelter {
   lng: number;
 }
 
-// 緯度と経度の距離を計算するための関数に型を指定
 const degreesToRadians = (degrees: number): number => {
   return degrees * (Math.PI / 180);
 };
 
-// 指定された半径内にポイントが含まれているかどうかを判定する関数に型を指定
 const isWithinRadius = (lat1: number, lng1: number, lat2: number, lng2: number, radius: number): boolean => {
   const earthRadius = 6371; // 地球の半径 (km)
   const dLat = degreesToRadians(lat2 - lat1);
@@ -33,6 +31,7 @@ const isWithinRadius = (lat1: number, lng1: number, lat2: number, lng2: number, 
 const MapComponent = () => {
   const [location, setLocation] = useState<Shelter | null>(null);
   const [shelters, setShelters] = useState<Shelter[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   useEffect(() => {
     Papa.parse('/TokyoSheet.csv', {
@@ -44,7 +43,7 @@ const MapComponent = () => {
           lng: parseFloat(row.lng),
         }));
         setShelters(parsedData);
-      },      
+      },
       error: () => {
         console.log('CSVの読み込みに失敗しました。');
       },
@@ -56,45 +55,44 @@ const MapComponent = () => {
       console.log("ブラウザで位置情報がサポートされていません。");
       return;
     }
+    setIsLoading(true);
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude } = position.coords;
         setLocation({ lat: latitude, lng: longitude });
+        setIsLoading(false);
       },
       () => {
         console.log("位置情報の取得に失敗しました。");
+        setIsLoading(false);
       }
     );
   };
 
   const getMapImageUrl = () => {
     if (!location) return '';
-    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY; // この行を保持して良い
+    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
     if (!apiKey) {
       console.error('APIキーが見つかりません。');
       return '';
     }
-    
+
     const { lat, lng } = location;
     const zoom = 15;
     const size = '500x500';
 
-  // 500m範囲内にあるシェルターのみをフィルタリング
-  const filteredShelters = shelters.filter(shelter =>
-    isWithinRadius(lat, lng, shelter.lat, shelter.lng, 0.5)
-  );
+    const filteredShelters = shelters.filter(shelter =>
+      isWithinRadius(lat, lng, shelter.lat, shelter.lng, 0.5)
+    );
 
-  // シェルターマーカーを生成
-  const shelterMarkers = filteredShelters
-    .map(shelter => `markers=color:red|label:S|${shelter.lat},${shelter.lng}`)
-    .join('&');
+    const shelterMarkers = filteredShelters
+      .map(shelter => `markers=color:red|label:S|${shelter.lat},${shelter.lng}`)
+      .join('&');
 
-  // 現在地に黒点を打つマーカーを追加
-  const currentLocationMarker = `markers=color:black|label:C|${lat},${lng}`;
+    const currentLocationMarker = `markers=color:black|label:C|${lat},${lng}`;
 
-  // マーカーをURLに追加
-  return `https://maps.googleapis.com/maps/api/staticmap?center=${lat},${lng}&zoom=${zoom}&size=${size}&format=jpg&key=${apiKey}&${currentLocationMarker}&${shelterMarkers}`;
-};
+    return `https://maps.googleapis.com/maps/api/staticmap?center=${lat},${lng}&zoom=${zoom}&size=${size}&format=jpg&key=${apiKey}&${currentLocationMarker}&${shelterMarkers}`;
+  };
 
   const downloadMapImage = () => {
     const mapImageUrl = getMapImageUrl();
@@ -141,20 +139,17 @@ const MapComponent = () => {
       <h1 className="text-3xl text-black font-bold mb-6">GPS 避難所 MAP</h1>
       <div className="w-full max-w-md flex justify-center">
         <button
-          className="py-2 px-6 group relative bg-orange-600 text-white rounded duration-300 inline-flex items-center shadow hover:shadow-lg"
+          className={`py-2 px-6 group relative rounded duration-300 inline-flex items-center shadow hover:shadow-lg ${
+            isLoading ? 'bg-gray-400' : 'bg-orange-600 hover:bg-orange-700'
+          } text-white`}
           onClick={location ? downloadMapImage : getCurrentLocation}
+          disabled={isLoading}
         >
-          {location ? 'download' : 'GPS ON'}
+          {isLoading ? 'Loading...' : location ? 'download' : 'GPS ON'}
         </button>
       </div>
       <p className="text-center text-black mt-4 mx-4">
         GPS を使って現在地の避難所が載った MAP をダウンロードできます。
-      </p>
-      <p className="text-center text-black mt-4 mx-4">
-        You can download a MAP with evacuation centers in your current location using GPS.
-      </p>
-      <p className="text-center text-black mt-4 mx-4">
-      您可以使用 GPS 下载您当前所在位置的疏散中心地图。
       </p>
     </div>
   );
