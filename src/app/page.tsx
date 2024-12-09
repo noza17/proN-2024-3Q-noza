@@ -15,7 +15,7 @@ const degreesToRadians = (degrees: number): number => {
 const isWithinRadius = (lat1: number, lng1: number, lat2: number, lng2: number, radius: number): boolean => {
   const earthRadius = 6371; // 地球の半径 (km)
   const dLat = degreesToRadians(lat2 - lat1);
-  const dLng = degreesToRadians(lng2 - lng1);
+  const dLng = degreesToRadians(lng2 - lat1);
 
   const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
@@ -32,6 +32,7 @@ const MapComponent = () => {
   const [location, setLocation] = useState<Shelter | null>(null);
   const [shelters, setShelters] = useState<Shelter[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     Papa.parse('/TokyoSheet.csv', {
@@ -52,10 +53,11 @@ const MapComponent = () => {
 
   const getCurrentLocation = () => {
     if (!navigator.geolocation) {
-      console.log("ブラウザで位置情報がサポートされていません。");
+      setError("ブラウザで位置情報がサポートされていません。");
       return;
     }
     setIsLoading(true);
+    setError(null); // エラー状態をリセット
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude } = position.coords;
@@ -63,7 +65,7 @@ const MapComponent = () => {
         setIsLoading(false);
       },
       () => {
-        console.log("位置情報の取得に失敗しました。");
+        setError("位置情報が読み込めませんでした。");
         setIsLoading(false);
       }
     );
@@ -145,18 +147,19 @@ const MapComponent = () => {
           onClick={location ? downloadMapImage : getCurrentLocation}
           disabled={isLoading}
         >
-          {isLoading ? 'Loading...' : location ? 'download' : 'GPS ON'}
+          {isLoading
+            ? 'Loading...'
+            : error
+            ? '位置情報が読み込めませんでした。'
+            : location
+            ? 'download'
+            : 'GPS ON'}
         </button>
       </div>
       <p className="text-center text-black mt-4 mx-4">
         GPS を使って現在地の避難所が載った MAP をダウンロードできます。
       </p>
-      <p className="text-center text-black mt-4 mx-4">
-        You can download a MAP with evacuation centers in your current location using GPS.
-      </p>
-      <p className="text-center text-black mt-4 mx-4">
-      您可以使用 GPS 下载您当前所在位置的疏散中心地图。
-      </p>
+      {error && <p className="text-center text-red-500 mt-4">{error}</p>}
     </div>
   );
 };
