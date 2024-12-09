@@ -149,17 +149,19 @@ const MapComponent = () => {
         >
           {isLoading
             ? 'Loading...'
-            : error
-            ? '位置情報が読み込めませんでした。'
             : location
             ? 'download'
             : 'GPS ON'}
         </button>
       </div>
-      <p className="text-center text-black mt-4 mx-4">
-        GPS を使って現在地の避難所が載った MAP をダウンロードできます。
-      </p>
-      {error && <p className="text-center text-red-500 mt-4">{error}</p>}
+      {error && (
+        <p className="text-center text-red-500 mt-4">
+          {error} 再度お試しください。
+        </p>
+      )}
+      <p className="text-center text-black mt-4 mx-4"> GPS を使って現在地の避難所が載った MAP をダウンロードできます。 </p>
+      <p className="text-center text-black mt-4 mx-4"> You can download a MAP with evacuation centers in your current location using GPS. </p>
+      <p className="text-center text-black mt-4 mx-4"> 您可以使用 GPS 下载您当前所在位置的疏散中心地图。 </p>
     </div>
   );
 };
